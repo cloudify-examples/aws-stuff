@@ -1,5 +1,30 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
+    "Parameters": {
+        "AwsAccessKeyId": {
+            "Type": "String",
+            "Description": "The aws_access_key_id that you want your Manager to create AWS resources with."
+        },
+        "AwsSecretAccessKey": {
+            "Type": "String",
+            "Description": "The aws_secret_access_key that you want your Manager to create AWS resources with."
+        },
+        "AgentKeyPublic": {
+            "Type": "String",
+            "Description": "The public key material of an RSA key pair.",
+            "Default": ""
+        },
+        "AgentKeyPrivate": {
+            "Type": "String",
+            "Description": "The private key material of an RSA key pair.",
+            "Default": ""
+        },
+        "Plugins": {
+            "Type": "String",
+            "Description": "The plugins to upload to the Manager.",
+            "Default": "https://github.com/cloudify-incubator/cloudify-utilities-plugin/releases/download/1.2.5/cloudify_utilities_plugin-1.2.5-py27-none-linux_x86_64-centos-Core.wgn https://github.com/cloudify-incubator/cloudify-kubernetes-plugin/releases/download/1.2.0/cloudify_kubernetes_plugin-1.2.0-py27-none-linux_x86_64-centos-Core.wgn http://repository.cloudifysource.org/cloudify/wagons/cloudify-diamond-plugin/1.3.5/cloudify_diamond_plugin-1.3.5-py27-none-linux_x86_64-centos-Core.wgn http://repository.cloudifysource.org/cloudify/wagons/cloudify-diamond-plugin/1.3.5/cloudify_diamond_plugin-1.3.5-py27-none-linux_x86_64-Ubuntu-trusty.wgn http://repository.cloudifysource.org/cloudify/wagons/cloudify-fabric-plugin/1.5/cloudify_fabric_plugin-1.5-py27-none-linux_x86_64-centos-Core.wgn http://repository.cloudifysource.org/cloudify/wagons/cloudify-aws-plugin/1.5/cloudify_aws_plugin-1.5-py27-none-linux_x86_64-centos-Core.wgn https://github.com/cloudify-incubator/cloudify-awssdk-plugin/releases/download/1.0.0/cloudify_awssdk_plugin-1.0.0-py27-none-any-none-none.wgn https://github.com/cloudify-cosmo/cloudify-openstack-plugin/releases/download/2.2.0/cloudify_openstack_plugin-2.2.0-py27-none-linux_x86_64-centos-Core.wgn https://github.com/cloudify-incubator/cloudify-azure-plugin/releases/download/1.4.3/cloudify_azure_plugin-1.4.3-py27-none-linux_x86_64.wgn"
+        }
+    },
     "Mappings" : {
         "RegionMap" : {
             "us-east-1": {
@@ -357,45 +382,49 @@
                     ]
                 },
                 "InstanceType": "m3.large",
+                "KeyName": "trammelltest",
                 "NetworkInterfaces" : [
                     { "NetworkInterfaceId" : {"Ref" : "CfyManagerNIC"}, "DeviceIndex" : "0" }
                 ],
+                "UserData": { "Fn::Base64" : { "Fn::Join" : ["", [
+                    "#!/bin/bash -xe\n",
+                    "\n",
+                    "until cfy status;\n",
+                    "do sleep 3; \n",
+                    "done\n",
+                    "sleep 15\n",
+                    "function run_until_success {\n",
+                    "    COUNTER=0\n",
+                    "    while true; do\n",
+                    "    sleep 3\n",
+                    "    eval $1\n",
+                    "    if [ $? -eq 0 ] || [ $COUNTER -eq 10 ]; then\n",
+                    "        return $?\n",
+                    "    fi\n",
+                    "    let COUNTER=COUNTER+1\n",
+                    "    done\n",
+                    "}\n",
+                    "run_until_success \"cfy profiles use -u admin -p admin -t default_tenant ", {"Ref" : "CfyManagerEIP"}, "\"\n",
+                    "run_until_success \"cfy secrets create aws_access_key_id -s ", { "Ref": "AwsAccessKeyId" }, "\"\n",
+                    "run_until_success \"cfy secrets create aws_secret_access_key -s ", {  "Ref": "AwsSecretAccessKey" }, "\"\n",
+                    "run_until_success \"cfy secrets create ec2_region_name -s ", { "Ref": "AWS::Region" }, "\"\n",
+                    "run_until_success \"cfy secrets create ec2_region_endpoint -s ", { "Ref": "CfyVPC" }, "\"\n",
+                    "run_until_success \"cfy secrets create vpc_id -s ", { "Ref": "CfyVPC" }, "\"\n",
+                    "run_until_success \"cfy secrets create private_subnet_id -s ", { "Ref": "CfyVPCPrivateSubnet" }, "\"\n",
+                    "run_until_success \"cfy secrets create public_subnet_id -s ", { "Ref": "CfyVPCPublicSubnet" }, "\"\n",
+                    "run_until_success \"cfy secrets create agent_key_private -s ", { "Ref": "AgentKeyPrivate" }, "\"\n",
+                    "run_until_success \"cfy secrets create agent_key_public -s ", { "Ref": "AgentKeyPublic" }, "\"\n",
+                    "run_until_success \"cfy secrets create ubuntu_trusty_image -s ", { "Fn::FindInMap": [ "RegionMap", { "Ref": "AWS::Region" }, "UbuntuTrusty" ] }, "\"\n",
+                    "run_until_success \"cfy secrets create centos_core_image -s ", { "Fn::FindInMap": [ "RegionMap", { "Ref": "AWS::Region" }, "CentosCore" ] }, "\"\n",
+                    "run_until_success \"cfy secrets create availability_zone -s ", { "Fn::Select" : [ { "Fn::FindInMap": [ "RegionMap", { "Ref": "AWS::Region" }, "AZ2" ] }, { "Fn::GetAZs": { "Ref": "AWS::Region" } } ] }, "\"\n",
+                    "for i in ", { "Ref": "Plugins" }, ";\n",
+                    "do run_until_success \"cfy plugins upload $i;\"\n",
+                    "sleep 3;\n",
+                    "done",
+                    "\n"
+                ]]}},
                 "Tags" : [ {"Key" : "CloudifyEnvironmentVersion", "Value" : "1.0"} ]
             }
-        }
-    },
-    "Outputs": {
-        "DefaultRegionSecret": {
-            "Description": "Verify a secret named ec2_region_name exists with this value.",
-            "Value": { "Ref": "AWS::Region" }
-        },
-        "DefaultRegionEndpointSecret": {
-            "Description": "Verify a secret named ec2_region_endpoint exists with this value.",
-            "Value": { "Fn::FindInMap": [ "RegionMap", { "Ref": "AWS::Region" }, "RegionEndpoint" ] }
-        },
-        "DefaultAvailabilityZoneSecret": {
-            "Description": "Verify a secret named availability_zone exists with this value.",
-            "Value": {"Fn::Select" : [{"Fn::FindInMap": ["RegionMap", {"Ref":"AWS::Region"}, "AZ2"]}, {"Fn::GetAZs": {"Ref": "AWS::Region"}}]}
-        },
-        "DefaultVpcSecret": {
-            "Description": "Verify a secret named vpc_id exists with this value.",
-            "Value": { "Ref": "CfyVPC" }
-        },
-        "DefaultPrivateSubnetSecret": {
-            "Description": "Verify a secret named private_subnet_id exists with this value.",
-            "Value": { "Ref" : "CfyVPCPrivateSubnet" }
-        },
-        "DefaultPublicSubnetSecret": {
-            "Description": "Verify a secret named public_subnet_id exists with this value.",
-            "Value": { "Ref" : "CfyVPCPublicSubnet" }
-        },
-        "DefaultCentosCoreImageSecret": {
-            "Description": "Verify a secret named centos_core_image exists with this value.",
-            "Value": { "Fn::FindInMap": [ "RegionMap", { "Ref": "AWS::Region" }, "CentosCore" ] }
-        },
-        "DefaultUbuntuTrustySecret": {
-            "Description": "Verify a secret named ubuntu_trusty_image exists with this value.",
-            "Value": { "Fn::FindInMap": [ "RegionMap", { "Ref": "AWS::Region" }, "UbuntuTrusty" ] }
         }
     }
 }
