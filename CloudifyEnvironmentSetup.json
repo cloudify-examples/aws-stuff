@@ -1,0 +1,401 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Mappings" : {
+        "RegionMap" : {
+            "us-east-1": {
+                "Name": "N. Virgina",
+                "RegionEndpoint": "ec2.us-east-1.amazonaws.com",
+                "NumAZs": "4",
+                "AZ0": "0",
+                "AZ1": "1",
+                "AZ2": "2",
+                "CentosCore": "ami-72667b65",
+                "UbuntuTrusty": "ami-841f46ff",
+                "CfyAMI" : "ami-ab210ed0"
+            },
+            "us-west-1": {
+                "Name": "N. California",
+                "RegionEndpoint": "ec2.us-west-1.amazonaws.com",
+                "NumAZs": "2",
+                "AZ0": "0",
+                "AZ1": "1",
+                "AZ2": "0",
+                "CentosCore": "ami-36f7a656",
+                "UbuntuTrusty": "ami-b2527ad2",
+                "CfyAMI" : "ami-58361d38"
+            },
+            "eu-west-1": {
+                "Name": "Ireland",
+                "RegionEndpoint": "ec2.eu-west-1.amazonaws.com",
+                "NumAZs": "3",
+                "AZ0": "0",
+                "AZ1": "1",
+                "AZ2": "2",
+                "CentosCore": "ami-98072aeb",
+                "UbuntuTrusty": "ami-1e749f67",
+                "CfyAMI" : "ami-6a23d513"
+            },
+            "ap-southeast-1": {
+                "Name": "Singapore",
+                "RegionEndpoint": "ec2.ap-southeast-1.amazonaws.com",
+                "NumAZs": "2",
+                "AZ0": "0",
+                "AZ1": "1",
+                "AZ2": "0",
+                "CentosCore": "ami-6baa0308",
+                "UbuntuTrusty": "ami-49b5282a",
+                "CfyAMI" : "ami-60039a03"
+            },
+            "ap-northeast-1": {
+                "Name": "Tokyo",
+                "RegionEndpoint": "ec2.ap-northeast-1.amazonaws.com",
+                "NumAZs": "2",
+                "AZ0": "0",
+                "AZ1": "1",
+                "AZ2": "0",
+                "CentosCore": "ami-b2fd89d5",
+                "UbuntuTrusty": "ami-2e866b48",
+                "CfyAMI" : "ami-4f27cc29"
+            },
+            "sa-east-1": {
+                "Name": "Sao Paulo",
+                "RegionEndpoint": "ec2.sa-east-1.amazonaws.com",
+                "NumAZs": "3",
+                "AZ0": "0",
+                "AZ1": "1",
+                "AZ2": "2",
+                "CentosCore": "ami-d1ee75bd",
+                "UbuntuTrusty": "ami-4c93e420",
+                "CfyAMI" :"ami-d195e3bd"
+            }
+        }
+    },
+    "Resources": {
+        "CfyVPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock" : "10.10.0.0/16",
+                "Tags" : [ {"Key" : "CloudifyEnvironmentVersion", "Value" : "1.0"} ]
+            }
+        },
+        "CfyVPCInternetGateway": {
+            "Type": "AWS::EC2::InternetGateway",
+            "Properties": {
+                "Tags" : [ {"Key" : "CloudifyEnvironmentVersion", "Value" : "1.0"} ]
+            }
+        },
+        "CfyVPCInternetGatewayAttachment" : {
+           "Type" : "AWS::EC2::VPCGatewayAttachment",
+           "Properties" : {
+             "VpcId" : { "Ref" : "CfyVPC" },
+             "InternetGatewayId" : { "Ref" : "CfyVPCInternetGateway" }
+           }
+        },
+        "CfyManagerSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Cloudify Manager Security Group",
+                "VpcId" : {
+                    "Ref" : "CfyVPC"
+                },
+                "SecurityGroupIngress" : [
+                    {
+                        "IpProtocol" : "icmp",
+                        "FromPort" : "-1",
+                        "ToPort" : "-1",
+                        "CidrIp" : "0.0.0.0/0"
+                    },
+                    {
+                        "IpProtocol" : "tcp",
+                        "FromPort" : "22",
+                        "ToPort" : "22",
+                        "CidrIp" : "0.0.0.0/0"
+                    },
+                    {
+                        "IpProtocol" : "tcp",
+                        "FromPort" : "80",
+                        "ToPort" : "80",
+                        "CidrIp" : "0.0.0.0/0"
+                    },
+                    {
+                        "IpProtocol" : "tcp",
+                        "FromPort" : "443",
+                        "ToPort" : "443",
+                        "CidrIp" : "0.0.0.0/0"
+                    },
+                    {
+                        "IpProtocol" : "tcp",
+                        "FromPort" : "5671",
+                        "ToPort" : "5671",
+                        "CidrIp" : {
+                            "Fn::GetAtt": [
+                                "CfyVPC",
+                                "CidrBlock"
+                            ]
+                        }
+                    },
+                    {
+                        "IpProtocol" : "tcp",
+                        "FromPort" : "8101",
+                        "ToPort" : "8101",
+                        "CidrIp" : {
+                            "Fn::GetAtt": [
+                                "CfyVPC",
+                                "CidrBlock"
+                            ]
+                        }
+                    },
+                    {
+                        "IpProtocol" : "tcp",
+                        "FromPort" : "8300",
+                        "ToPort" : "8300",
+                        "CidrIp" : {
+                            "Fn::GetAtt": [
+                                "CfyVPC",
+                                "CidrBlock"
+                            ]
+                        }
+                    },
+                    {
+                        "IpProtocol" : "tcp",
+                        "FromPort" : "8301",
+                        "ToPort" : "8301",
+                        "CidrIp" : {
+                            "Fn::GetAtt": [
+                                "CfyVPC",
+                                "CidrBlock"
+                            ]
+                        }
+                    },
+                    {
+                        "IpProtocol" : "tcp",
+                        "FromPort" : "8500",
+                        "ToPort" : "8500",
+                        "CidrIp" : {
+                            "Fn::GetAtt": [
+                                "CfyVPC",
+                                "CidrBlock"
+                            ]
+                        }
+                    },
+                    {
+                        "IpProtocol" : "tcp",
+                        "FromPort" : "15432",
+                        "ToPort" : "15432",
+                        "CidrIp" : {
+                            "Fn::GetAtt": [
+                                "CfyVPC",
+                                "CidrBlock"
+                            ]
+                        }
+                    },
+                    {
+                        "IpProtocol" : "tcp",
+                        "FromPort" : "22000",
+                        "ToPort" : "22000",
+                        "CidrIp" : {
+                            "Fn::GetAtt": [
+                                "CfyVPC",
+                                "CidrBlock"
+                            ]
+                        }
+                    },
+                    {
+                        "IpProtocol" : "tcp",
+                        "FromPort" : "53333",
+                        "ToPort" : "53333",
+                        "CidrIp" : {
+                            "Fn::GetAtt": [
+                                "CfyVPC",
+                                "CidrBlock"
+                            ]
+                        }
+                    }
+                ],
+                "Tags" : [ {"Key" : "CloudifyEnvironmentVersion", "Value" : "1.0"} ]
+            }
+        },
+        "CfyVPCPrivateSubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "CfyVPC"
+                },
+                "AvailabilityZone" : {
+                    "Fn::Select" : [
+                        {
+                            "Fn::FindInMap": [
+                                "RegionMap", { "Ref": "AWS::Region" },
+                                "AZ2"
+                            ]
+                        },
+                        {
+                            "Fn::GetAZs" : {
+                                "Ref" : "AWS::Region"
+                            }
+                        }
+                    ]
+                },
+                "CidrBlock" : "10.10.0.0/24",
+                "Tags" : [ {"Key" : "CloudifyEnvironmentVersion", "Value" : "1.0"} ]
+            }
+        },
+        "CfyVPCPublicSubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "CfyVPC"
+                },
+                "AvailabilityZone" : {
+                    "Fn::Select" : [
+                        {
+                            "Fn::FindInMap": [
+                                "RegionMap", { "Ref": "AWS::Region" },
+                                "AZ2"
+                            ]
+                        },
+                        {
+                            "Fn::GetAZs" : {
+                                "Ref" : "AWS::Region"
+                            }
+                        }
+                    ]
+                },
+                "CidrBlock" : "10.10.1.0/24",
+                "Tags" : [ {"Key" : "CloudifyEnvironmentVersion", "Value" : "1.0"} ]
+            }
+        },
+        "CfyVPCPrivateSubnetRouteTable": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "CfyVPC"
+                },
+                "Tags" : [ {"Key" : "CloudifyEnvironmentVersion", "Value" : "1.0"} ]
+            }
+        },
+        "CfyVPCPublicSubnetRouteTable": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "CfyVPC"
+                },
+                "Tags" : [ {"Key" : "CloudifyEnvironmentVersion", "Value" : "1.0"} ]
+            }
+        },
+        "CfyVPCPrivateSubnetRouteTableAssociation" : {
+            "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties" : {
+                "SubnetId" : { "Ref" : "CfyVPCPrivateSubnet" },
+                "RouteTableId" : { "Ref" : "CfyVPCPrivateSubnetRouteTable" }
+            }
+        },
+        "CfyVPCPublicSubnetRouteTableAssociation" : {
+            "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties" : {
+                "SubnetId" : { "Ref" : "CfyVPCPublicSubnet" },
+                "RouteTableId" : { "Ref" : "CfyVPCPublicSubnetRouteTable" }
+            }
+        },
+        "CfyVPCPublicSubnetRouteToInternetGateway": {
+            "Type": "AWS::EC2::Route",
+            "Properties": {
+                "RouteTableId" : { "Ref" : "CfyVPCPublicSubnetRouteTable" },
+                "DestinationCidrBlock" : "0.0.0.0/0",
+                "GatewayId" : { "Ref" : "CfyVPCInternetGateway" }
+            }
+        },
+        "CfyVPCNatGatewayEIP": {
+            "Type": "AWS::EC2::EIP",
+            "Properties": {
+                "Domain": "vpc"
+            }
+        },
+        "CfyVpcNatGateway": {
+            "Type": "AWS::EC2::NatGateway",
+            "Properties": {
+                "AllocationId" : { "Fn::GetAtt" : ["CfyVPCNatGatewayEIP", "AllocationId"]},
+                "SubnetId" : { "Ref" : "CfyVPCPublicSubnet"}
+            }
+        },
+        "CfyVPCPrivateSubnetRouteToNatGateway": {
+            "Type": "AWS::EC2::Route",
+            "Properties": {
+                "RouteTableId" : { "Ref" : "CfyVPCPrivateSubnetRouteTable" },
+                "DestinationCidrBlock" : "0.0.0.0/0",
+                "NatGatewayId" : { "Ref" : "CfyVpcNatGateway" }
+            }
+        },
+        "CfyManagerNIC": {
+            "Type": "AWS::EC2::NetworkInterface",
+            "Properties": {
+                "SubnetId" : { "Ref" : "CfyVPCPublicSubnet" },
+                "GroupSet" : [ {"Ref" : "CfyManagerSecurityGroup"} ],
+                "Tags" : [ {"Key" : "CloudifyEnvironmentVersion", "Value" : "1.0"} ]
+            }
+        },
+        "CfyManagerEIP": {
+            "Type": "AWS::EC2::EIP",
+            "Properties": {
+                "Domain": "vpc"
+            }
+        },
+        "CfyManagerNICAssociationEIP" : {
+            "Type" : "AWS::EC2::EIPAssociation",
+            "Properties" : {
+                "AllocationId" : { "Fn::GetAtt" : [ "CfyManagerEIP", "AllocationId" ]},
+                "NetworkInterfaceId" : { "Ref" : "CfyManagerNIC" }
+            }
+        },
+        "CfyManagerVM": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "ImageId": {
+                    "Fn::FindInMap": [
+                        "RegionMap", { "Ref": "AWS::Region" },
+                        "CfyAMI"
+                    ]
+                },
+                "InstanceType": "m3.large",
+                "NetworkInterfaces" : [
+                    { "NetworkInterfaceId" : {"Ref" : "CfyManagerNIC"}, "DeviceIndex" : "0" }
+                ],
+                "Tags" : [ {"Key" : "CloudifyEnvironmentVersion", "Value" : "1.0"} ]
+            }
+        }
+    },
+    "Outputs": {
+        "DefaultRegionSecret": {
+            "Description": "Verify a secret named ec2_region_name exists with this value.",
+            "Value": { "Ref": "AWS::Region" }
+        },
+        "DefaultRegionEndpointSecret": {
+            "Description": "Verify a secret named ec2_region_endpoint exists with this value.",
+            "Value": { "Fn::FindInMap": [ "RegionMap", { "Ref": "AWS::Region" }, "RegionEndpoint" ] }
+        },
+        "DefaultAvailabilityZoneSecret": {
+            "Description": "Verify a secret named availability_zone exists with this value.",
+            "Value": {"Fn::Select" : [{"Fn::FindInMap": ["RegionMap", {"Ref":"AWS::Region"}, "AZ2"]}, {"Fn::GetAZs": {"Ref": "AWS::Region"}}]}
+        },
+        "DefaultVpcSecret": {
+            "Description": "Verify a secret named vpc_id exists with this value.",
+            "Value": { "Ref": "CfyVPC" }
+        },
+        "DefaultPrivateSubnetSecret": {
+            "Description": "Verify a secret named private_subnet_id exists with this value.",
+            "Value": { "Ref" : "CfyVPCPrivateSubnet" }
+        },
+        "DefaultPublicSubnetSecret": {
+            "Description": "Verify a secret named public_subnet_id exists with this value.",
+            "Value": { "Ref" : "CfyVPCPublicSubnet" }
+        },
+        "DefaultCentosCoreImageSecret": {
+            "Description": "Verify a secret named centos_core_image exists with this value.",
+            "Value": { "Fn::FindInMap": [ "RegionMap", { "Ref": "AWS::Region" }, "CentosCore" ] }
+        },
+        "DefaultUbuntuTrustySecret": {
+            "Description": "Verify a secret named ubuntu_trusty_image exists with this value.",
+            "Value": { "Fn::FindInMap": [ "RegionMap", { "Ref": "AWS::Region" }, "UbuntuTrusty" ] }
+        }
+    }
+}
