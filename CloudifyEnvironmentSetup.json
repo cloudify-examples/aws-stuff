@@ -9,16 +9,6 @@
             "Type": "String",
             "Description": "The aws_secret_access_key that you want your Manager to create AWS resources with."
         },
-        "AgentKeyPublic": {
-            "Type": "String",
-            "Description": "The public key material of an RSA key pair.",
-            "Default": ""
-        },
-        "AgentKeyPrivate": {
-            "Type": "String",
-            "Description": "The private key material of an RSA key pair.",
-            "Default": ""
-        },
         "Plugins": {
             "Type": "String",
             "Description": "The plugins to upload to the Manager.",
@@ -408,12 +398,10 @@
                     "run_until_success \"cfy secrets create aws_access_key_id -s ", { "Ref": "AwsAccessKeyId" }, "\"\n",
                     "run_until_success \"cfy secrets create aws_secret_access_key -s ", {  "Ref": "AwsSecretAccessKey" }, "\"\n",
                     "run_until_success \"cfy secrets create ec2_region_name -s ", { "Ref": "AWS::Region" }, "\"\n",
-                    "run_until_success \"cfy secrets create ec2_region_endpoint -s ", { "Ref": "CfyVPC" }, "\"\n",
+                    "run_until_success \"cfy secrets create ec2_region_endpoint -s ", { "Fn::FindInMap": [ "RegionMap", { "Ref": "AWS::Region" }, "RegionEndpoint" ] }, "\"\n",
                     "run_until_success \"cfy secrets create vpc_id -s ", { "Ref": "CfyVPC" }, "\"\n",
                     "run_until_success \"cfy secrets create private_subnet_id -s ", { "Ref": "CfyVPCPrivateSubnet" }, "\"\n",
                     "run_until_success \"cfy secrets create public_subnet_id -s ", { "Ref": "CfyVPCPublicSubnet" }, "\"\n",
-                    "run_until_success \"cfy secrets create agent_key_private -s ", { "Ref": "AgentKeyPrivate" }, "\"\n",
-                    "run_until_success \"cfy secrets create agent_key_public -s ", { "Ref": "AgentKeyPublic" }, "\"\n",
                     "run_until_success \"cfy secrets create ubuntu_trusty_image -s ", { "Fn::FindInMap": [ "RegionMap", { "Ref": "AWS::Region" }, "UbuntuTrusty" ] }, "\"\n",
                     "run_until_success \"cfy secrets create centos_core_image -s ", { "Fn::FindInMap": [ "RegionMap", { "Ref": "AWS::Region" }, "CentosCore" ] }, "\"\n",
                     "run_until_success \"cfy secrets create availability_zone -s ", { "Fn::Select" : [ { "Fn::FindInMap": [ "RegionMap", { "Ref": "AWS::Region" }, "AZ2" ] }, { "Fn::GetAZs": { "Ref": "AWS::Region" } } ] }, "\"\n",
