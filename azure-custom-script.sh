@@ -22,12 +22,12 @@ sleep 1
 
 cfy bootstrap /opt/cfy/cloudify-manager-blueprints/simple-manager-blueprint.yaml -i public_ip=$PUBLIC_IP -i private_ip=$PRIVATE_IP -i ssh_user=cfyuser -i ssh_key_filename=/home/cfyuser/.ssh/key.pem -i ignore_bootstrap_validations=false -i admin_username=admin -i admin_password=admin
 
+run_until_success "cfy profiles use -u admin -p admin -t default_tenant $PUBLIC_IP",
+
 until cfy status;
     do sleep 3;
 done
 sleep 15
-
-run_until_success "cfy profiles use -u admin -p admin -t default_tenant $PUBLIC_IP",
 
 #run_until_success "cfy secrets create ubuntu_trusty_image -s $UBUNTU_TRUSTY_IMAGE"
 #run_until_success "cfy secrets create centos_core_image -s $CENTOS_CORE_IMAGE"
