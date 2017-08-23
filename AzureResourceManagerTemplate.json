@@ -182,7 +182,7 @@
                     "fileUris": [
                         "https://raw.githubusercontent.com/cloudify-examples/environment-setup-variants/add-azure/azure-custom-script.sh"
                     ],
-                    "commandToExecute": "bash azure-custom-script.sh"
+                    "commandToExecute": "bash azure-custom-script.sh localhost localhost"
                 }
             }
         }
