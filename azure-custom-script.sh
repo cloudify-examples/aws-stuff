@@ -43,27 +43,27 @@ cfy bootstrap /opt/cfy/cloudify-manager-blueprints/simple-manager-blueprint.yaml
 run_until_success "cfy profiles use -u admin -p admin -t default_tenant $PUBLIC_IP"
 run_until_success "cfy status"
 
-#sleep 15
-#
-#run_until_success "cfy secrets create large_image_size -s $LARGEVM"
-#run_until_success "cfy secrets create medium_image_size -s $MEDIUMVM"
-#run_until_success "cfy secrets create small_image_size -s $SMALLVM"
-#run_until_success "cfy secrets create ubuntu_trusty_image_publisher -s $TRUSTY_IMG_PUB"
-#run_until_success "cfy secrets create ubuntu_trusty_image_offer -s $TRUSTY_IMG_OFF"
-#run_until_success "cfy secrets create ubuntu_trusty_image_sku -s $TRUSTY_IMG_SKU"
-#run_until_success "cfy secrets create ubuntu_trusty_image_version -s $TRUSTY_IMG_VER"
-#run_until_success "cfy secrets create centos_core_image_publisher -s $CENTOS_IMG_PUB"
-#run_until_success "cfy secrets create centos_core_image_offer -s $CENTOS_IMG_OFF"
-#run_until_success "cfy secrets create centos_core_image_sku -s $CENTOS_IMG_SKU"
-#run_until_success "cfy secrets create centos_core_image_version -s $CENTOS_IMG_VER"
-#run_until_success "cfy secrets create mgr_subnet_name -s $SUBNET"
-#run_until_success "cfy secrets create mgr_virtual_network_name -s $VIRTUAL_NETWORK"
-#run_until_success "cfy secrets create mgr_resource_group_name -s $RESOURCE_GROUP"
-#run_until_success "cfy secrets create location -s $LOCATION"
-#
-#for i in $PLUGINS_LIST;
-#    do run_until_success "cfy plugins upload $i";
-#    sleep 3;
-#done
-#
-#run_until_success "cfy install https://github.com/cloudify-incubator/cloudify-utilities-plugin/archive/1.3.0.zip -n cloudify_ssh_key/examples/create-secret-agent-key.yaml -b agent_key"
+sleep 15
+
+run_until_success "cfy secrets create large_image_size -s $LARGEVM"
+run_until_success "cfy secrets create medium_image_size -s $MEDIUMVM"
+run_until_success "cfy secrets create small_image_size -s $SMALLVM"
+run_until_success "cfy secrets create ubuntu_trusty_image_publisher -s $TRUSTY_IMG_PUB"
+run_until_success "cfy secrets create ubuntu_trusty_image_offer -s $TRUSTY_IMG_OFF"
+run_until_success "cfy secrets create ubuntu_trusty_image_sku -s $TRUSTY_IMG_SKU"
+run_until_success "cfy secrets create ubuntu_trusty_image_version -s $TRUSTY_IMG_VER"
+run_until_success "cfy secrets create centos_core_image_publisher -s $CENTOS_IMG_PUB"
+run_until_success "cfy secrets create centos_core_image_offer -s $CENTOS_IMG_OFF"
+run_until_success "cfy secrets create centos_core_image_sku -s $CENTOS_IMG_SKU"
+run_until_success "cfy secrets create centos_core_image_version -s $CENTOS_IMG_VER"
+run_until_success "cfy secrets create mgr_subnet_name -s $SUBNET"
+run_until_success "cfy secrets create mgr_virtual_network_name -s $VIRTUAL_NETWORK"
+run_until_success "cfy secrets create mgr_resource_group_name -s $RESOURCE_GROUP"
+run_until_success "cfy secrets create location -s $LOCATION"
+
+for i in $PLUGINS_LIST;
+    do run_until_success "cfy plugins upload $i";
+    sleep 3;
+done
+
+run_until_success "cfy install https://github.com/cloudify-incubator/cloudify-utilities-plugin/archive/1.3.0.zip -n cloudify_ssh_key/examples/create-secret-agent-key.yaml -b agent_key"
