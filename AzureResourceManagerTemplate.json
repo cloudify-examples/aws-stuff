@@ -189,7 +189,7 @@
                         "fileUris": [
                             "https://raw.githubusercontent.com/cloudify-examples/environment-setup-variants/add-azure/azure-custom-script.sh"
                         ],
-                        "commandToExecute": "[concat('bash azure-custom-script.sh ', reference(variables('publicIPAddressName')).dnsSettings.fqdn, ' ', reference(variables('nicName')).ipConfigurations[0].properties.privateIPAddress, ' ', parameters('adminUsername'), variables('subnet1Name'), ' ', variables('virtualNetworkName'), ' ', resourceGroup().name, ' ', resourceGroup().location)]"
+                        "commandToExecute": "[concat('bash azure-custom-script.sh ', reference(variables('publicIPAddressName')).dnsSettings.fqdn, ' ', reference(variables('nicName')).ipConfigurations[0].properties.privateIPAddress, ' ', parameters('adminUsername'), ' ', variables('subnet1Name'), ' ', variables('virtualNetworkName'), ' ', resourceGroup().name, ' ', resourceGroup().location)]"
                     }
                 }
             }
