@@ -179,7 +179,7 @@
                 "typeHandlerVersion": "1.2",
                 "settings": {
                     "fileUris": [
-                        "https://raw.githubusercontent.com/cloudify-examples/environment-setup-variants/add-azure/azure-custom-script.sh"
+                        "https://raw.githubusercontent.com/cloudify-examples/environment-setup-variants/master/Azure/azure-custom-script.sh"
                     ],
                     "commandToExecute": "[concat('bash azure-custom-script.sh ', reference(variables('nicName')).ipConfigurations[0].properties.privateIPAddress, ' ', variables('subnet1Name'), ' ', variables('virtualNetworkName'), ' ', resourceGroup().name, ' ', resourceGroup().location, ' ', subscription().subscriptionId, ' ', subscription().tenantId, ' ', parameters('clientID'), ' ', parameters('clientSecret'))]"
                 }
