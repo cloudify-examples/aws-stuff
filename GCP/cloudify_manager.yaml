@@ -1,0 +1,6 @@
+imports:
+- path: cloudify_manager.jinja
+
+resources:
+- name: cloudify-manager
+  type: cloudify_manager.jinja

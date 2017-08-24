@@ -1,0 +1,21 @@
+info:
+  title: Cloudify Manager
+  author: Cloudify.co
+  description: Creates a VM running Cloudify Manager.
+
+required:
+- zone
+
+properties:
+  name:
+    type: string
+    description: The name of your Cloudify Manger.
+    default: "Cloudify Manager"
+  region:
+    type: string
+    description: The Region in which to run the service
+    default: europe-west1
+  zone:
+    type: string
+    description: The Zone in which to run the service
+    default: europe-west1-b
